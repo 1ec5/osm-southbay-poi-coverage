@@ -17,14 +17,30 @@ This repository contains ingredients for producing a report benchmarking OpenStr
 
 The following steps are to the best of my recollection but should hopefully include enough hints to reconstruct the QGIS project:
 
-1. Download the latest [Northern California](https://download.geofabrik.de/north-america/us/california/norcal.html) extract from Geofabrik as well as one from before the SDP import began on November 27, 2020.
-2. Export [this Overpass query](https://overpass-turbo.eu/s/1yA2) as GeoJSON and name the file santa-clara-county-boundary.geojson.
-3. Run extract-named.sh, passing in the extract’s file name, to filter it down to named POIs in Santa Clara County.
-4. Download tables [ACSDT5Y2019.B02001](https://data.census.gov/table?q=ACSDT5Y2019.B02001&g=050XX00US06085$1400000&tid=ACSDT5Y2019.B02001&tp=true), [ACSDT5Y2019.B03002](https://data.census.gov/table?q=ACSDT5Y2019.B03002&g=050XX00US06085$1400000&tid=ACSDT5Y2019.B03002&tp=true), and [ACSST5Y2019.S1903](https://data.census.gov/table?q=ACSST5Y2019.S1903&g=050XX00US06085$1400000&tid=ACSST5Y2019.S1903&tp=true) from the Census Bureau and unzip the files.
-5. Download the Complete ZIP Code Totals File from [County Business Patterns 2021](https://www.census.gov/data/datasets/2021/econ/cbp/2021-cbp.html) and unzip the file.
-6. Download the [MapRoulette challenges](https://github.com/codeforsanjose/OSM-SouthBay/issues/23#issuecomment-729607562) from the SDP import project in GeoJSON format.
-7. In the QGIS project, replace references to various files under the Sources group with the downloaded files.
-8. Reconstruct the derived layers using the `countpointsinpolygon`, `joinattributestable`, `mergevectorlayers`, and `centroids` tools in the Processing Toolbox.
+1. Prepare the geographic areas:
+   1. Download the national shapefile of [ZIP Code Tabulation Areas](https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2022&layergroup=ZIP+Code+Tabulation+Areas) and the California shapefile of [census tracts](https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2022&layergroup=Census+Tracts) from the Census Bureau and add both shapefiles to the QGIS project.
+   2. Apply the `extractbyattribute` tool in the Processing Toolbox to each layer, one by one, to filter it down to features where `STATEFP` is `06` and `COUNTYFP` is `085`.
+2. Prepare the demographic data:
+   1. Download tables [ACSDT5Y2019.B02001](https://data.census.gov/table?q=ACSDT5Y2019.B02001&g=050XX00US06085$1400000&tid=ACSDT5Y2019.B02001&tp=true), [ACSDT5Y2019.B03002](https://data.census.gov/table?q=ACSDT5Y2019.B03002&g=050XX00US06085$1400000&tid=ACSDT5Y2019.B03002&tp=true), and [ACSST5Y2019.S1903](https://data.census.gov/table?q=ACSST5Y2019.S1903&g=050XX00US06085$1400000&tid=ACSST5Y2019.S1903&tp=true) from the Census Bureau and add these files to the QGIS project.
+   2. Apply the `joinattributestable` tool in the Processing Toolbox to the census tract layer and each of the other demographic layers.
+3. Prepare the business activity data:
+   1. Download the Complete ZIP Code Totals File from [County Business Patterns 2021](https://www.census.gov/data/datasets/2021/econ/cbp/2021-cbp.html) and unzip the file.
+   2. Apply the `joinattributestable` tool in the Processing Toolbox to the ZCTA layer and the CBP layer.
+4. Prepare the SDP data:
+   1. Download the [MapRoulette challenges](https://github.com/codeforsanjose/OSM-SouthBay/issues/23#issuecomment-729607562) from the SDP import project in GeoJSON format.
+   2. Apply the `countpointsinpolygon` tool in the Processing Toolbox to the ZCTA layer and the SDP layer.
+   3. Apply the `countpointsinpolygon` tool in the Processing Toolbox to the census tract layer and the SDP layer.
+5. Prepare the OSM data:
+   1. Download the latest [Northern California](https://download.geofabrik.de/north-america/us/california/norcal.html) extract from Geofabrik as well as one from before the SDP import began on November 27, 2020.
+   2. Export [this Overpass query](https://overpass-turbo.eu/s/1yA2) as GeoJSON and name the file santa-clara-county-boundary.geojson.
+   3. Run extract-named.sh, passing in the extract’s file name, to filter it down to named POIs in Santa Clara County.
+   4. In the QGIS project, add the resulting OSM file to the Sources group (both points and multipolygons).
+   5. Apply the `centroids` tool in the Processing Toolbox to the “multipolygons” layer to create a temporary layer of centroids.
+   6. Apply the `mergevectorlayers` tool in the Processing Toolbox to the “points” and “multipolygons” layers to create a temporary layer of points and centroids.
+   7. Apply the `countpointsinpolygon` tool in the Processing Toolbox to the ZCTA layer and the OSM centroid layer.
+   8. Apply the `countpointsinpolygon` tool in the Processing Toolbox to the census tract layer and the OSM centroid layer.
+6. For each of the layers added in the previous steps, copy the symbol style from another layer that serves a similar purpose.
+7. Edit the symbol size or color expression to reflect the field names you used when applying the `countpointsinpolygon` tool.
 
 ## Sources
 
