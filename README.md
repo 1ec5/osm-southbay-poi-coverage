@@ -21,8 +21,20 @@ The following steps are to the best of my recollection but should hopefully incl
    1. Download the national shapefile of [ZIP Code Tabulation Areas](https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2022&layergroup=ZIP+Code+Tabulation+Areas) and the California shapefile of [census tracts](https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2022&layergroup=Census+Tracts) from the Census Bureau and add both shapefiles to the QGIS project.
    2. Apply the `extractbyattribute` tool in the Processing Toolbox to each layer, one by one, to filter it down to features where `STATEFP` is `06` and `COUNTYFP` is `085`.
 2. Prepare the demographic data:
-   1. Download tables [ACSDT5Y2019.B02001](https://data.census.gov/table?q=ACSDT5Y2019.B02001&g=050XX00US06085$1400000&tid=ACSDT5Y2019.B02001&tp=true), [ACSDT5Y2019.B03002](https://data.census.gov/table?q=ACSDT5Y2019.B03002&g=050XX00US06085$1400000&tid=ACSDT5Y2019.B03002&tp=true), and [ACSST5Y2019.S1903](https://data.census.gov/table?q=ACSST5Y2019.S1903&g=050XX00US06085$1400000&tid=ACSST5Y2019.S1903&tp=true) from the Census Bureau and add these files to the QGIS project.
-   2. Apply the `joinattributestable` tool in the Processing Toolbox to the census tract layer and each of the other demographic layers.
+   1. Download tables [ACSDT5Y2021.B02001](https://data.census.gov/table?q=ACSDT5Y2021.B02001&g=050XX00US06085$1400000&tid=ACSDT5Y2021.B02001&tp=true), [ACSDT5Y2021.B03002](https://data.census.gov/table?q=ACSDT5Y2021.B03002&g=050XX00US06085$1400000&tid=ACSDT5Y2021.B03002&tp=true), and [ACSST5Y2021.S1903](https://data.census.gov/table?q=ACSST5Y2021.S1903&g=050XX00US06085$1400000&tid=ACSST5Y2021.S1903&tp=true) from the Census Bureau as CSV files.
+   2. Simplify the race and ethnicity data:
+      1. Replace `"Census Tract ([\d.]+), Santa Clara County, California",.+?\n"\s+Estimate"` with `"\1"`.
+      2. Replace `"\s+Margin of Error".+?\n?` with the empty string.
+      3. Replace `(\d),(\d\d\d)` with `\1\2`.
+      4. Replace `"(\d+)"` with `\1`.
+   3. Simplify the income data:
+      1. Replace `"\s+(?:Number|Percent Distribution)".+?\n"\s+Estimate".+?\n"\s+Margin of Error".+?\n` with the empty string.
+      2. Replace `"Census Tract ([\d.]+), Santa Clara County, California",.+?\n"\s+Median income \(dollars\)".+?\n"\s+Estimate"` with `"\1"`.
+      3. Replace `"\s+Margin of Error".+?\n?` with the empty string.
+      4. Replace `(\d),(\d\d\d)` with `\1\2`.
+      5. Replace `"(\d+)"` with `\1`.
+   5. Add these files to the QGIS project.
+   6. Apply the `joinattributestable` tool in the Processing Toolbox to the census tract layer and each of the other demographic layers.
 3. Prepare the business activity data:
    1. Download the Complete ZIP Code Totals File from [County Business Patterns 2021](https://www.census.gov/data/datasets/2021/econ/cbp/2021-cbp.html) and unzip the file.
    2. Apply the `joinattributestable` tool in the Processing Toolbox to the ZCTA layer and the CBP layer.
